@@ -1,3 +1,4 @@
+import textwrap
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -67,8 +68,33 @@ class Conta:
     @property
     def historico(self):
         return self._historico
+    
+    def sacar(self, valor):
+        saldo = self.saldo
+        excedeu_saldo = valor > saldo
 
-    #ex
+        if excedeu_saldo:
+            print("\nOperação falhou! Você não tem saldo suficiente.")
+
+        elif valor > 0:
+            self._saldo -= valor
+            print("\n=== Saque realizado com sucesso! ===")
+            return True
+
+        else:
+            print("\nOperação falhou! O valor informado é inválido.")
+
+        return False
+
+    def depositar(self, valor):
+        if valor > 0:
+            self._saldo += valor
+            print("\n=== Depósito realizado com sucesso! ===")
+        else:
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+            return False
+
+        return True
 
 
 class ContaCorrente(Conta):
@@ -78,18 +104,16 @@ class ContaCorrente(Conta):
         self.limite_saques = limite_saques
 
     def sacar(self, valor):
-        numero_saques = len(
-            [transacao for transacao in self.historico.transacoes if transacao["tipo"] == Saque.__name__]
-        )
+        numero_saques = len([transacao for transacao in self.historico.transacoes if transacao["tipo"] == Saque.__name__])
 
         excedeu_limite = valor > self.limite
         excedeu_saques = numero_saques >= self.limite_saques
 
         if excedeu_limite:
-            print("\n@@@ Operação falhou! O valor do saque excede o limite. @@@")
+            print("\nOperação não realizada. O valor do saque excede o limite!")
 
         elif excedeu_saques:
-            print("\n@@@ Operação falhou! Número máximo de saques excedido. @@@")
+            print("\nOperação não realizada. Número máximo de saques excedido!")
 
         else:
             return super().sacar(valor)
@@ -117,7 +141,7 @@ class Historico:
             {
                 "tipo": transacao.__class__.__name__,
                 "valor": transacao.valor,
-                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%s"),
+                "data": datetime.now().strftime("%d/%m/%Y, %H:%M:%S"),
             }
         )
 
@@ -142,7 +166,7 @@ class Saque(Transacao):
         return self._valor
 
     def registrar(self, conta):
-        sucesso_transacao = conta.sacar(self.valor)
+        sucesso_transacao = conta.sacar(self._valor)
 
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
@@ -222,6 +246,7 @@ def sacar(clientes):
     conta = recuperar_conta_cliente(cliente)
     if not conta:
         return
+    
     cliente.realizar_transacao(conta, transacao)
 
 def exibir_extrato(clientes):
@@ -243,11 +268,11 @@ def exibir_extrato(clientes):
         extrato = "Não foram realizadas movimentações."
     else:
         for transacao in transacoes:
-            extrato += f"\n{transacao['tipo']}:\n\tR${transacao['valor']:.2f}"
+            extrato += f"\n{transacao['tipo']}:\n\tR$ {transacao['valor']:.2f},\n ========================="
     
     print(extrato)
     print(f"\nSaldo:\n\tR$ {conta.saldo:.2f}")
-    print("="*15)
+    print("="*25)
 
 def criar_conta(numero_conta, clientes, contas):
     cpf = input("Informe o CPF do cliente: ")
@@ -265,8 +290,8 @@ def criar_conta(numero_conta, clientes, contas):
 
 def listar_contas(contas):
     for conta in contas:
-        print("=" * 30)
-        print((str(conta)))
+        print("=" * 25)
+        print(textwrap.dedent(str(conta)))
 
 def criar_cliente(clientes):
   
@@ -322,8 +347,8 @@ def main():
 
 main()
 
-
-#  for conta in contas:
+# Alternativa de textwrap em listar_contas 
+#   for conta in contas: 
 #         linha = f"""\
 #             Agência:\t{conta['agencia']}
 #             C/C:\t{conta['numero_conta']}
@@ -334,32 +359,3 @@ main()
 #         print("=" * 42)
 #     if not contas:
 #         print("\n\tNão existem contas ativas!")
-
-
-# ex
-# def sacar(self, valor):
-#         saldo = self.saldo
-#         excedeu_saldo = valor > saldo
-
-#         if excedeu_saldo:
-#             print("\n@@@ Operação falhou! Você não tem saldo suficiente. @@@")
-
-#         elif valor > 0:
-#             self._saldo -= valor
-#             print("\n=== Saque realizado com sucesso! ===")
-#             return True
-
-#         else:
-#             print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
-
-#         return False
-
-#     def depositar(self, valor):
-#         if valor > 0:
-#             self._saldo += valor
-#             print("\n=== Depósito realizado com sucesso! ===")
-#         else:
-#             print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
-#             return False
-
-#         return True
